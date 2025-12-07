@@ -4,6 +4,7 @@ import msgpack
 
 from node import Node
 
+LIMIT_AUTO_COMPLETE = 10
 
 def dict_to_node(d):
     """Convert dict back to Node recursively."""
@@ -40,16 +41,16 @@ def run_traverse(node: Node, prefix="", limit=None):
     return result
 
 
-def traverse(root: Node, user_input="", limit=10):
+def traverse(root: Node, user_input=""):
     if user_input == "":
-        return run_traverse(root, user_input, limit)
+        return run_traverse(root, user_input, LIMIT_AUTO_COMPLETE)
     curr = root
     for char in user_input:
         index = ord(char.lower())
         if not curr.edges.get(index):
             return []
         curr = curr.edges[index]
-    return run_traverse(curr, user_input, limit)
+    return run_traverse(curr, user_input, LIMIT_AUTO_COMPLETE)
 
 
 print("Press keys (Esc to exit):")
