@@ -84,12 +84,12 @@ while True:
                 packed = msgpack.packb(trie_dict, use_bin_type=True)
                 f.write(packed)
             print("Changes saved.")
-            print("\nExiting...")
+        print("\nExiting...")
         break
     elif key == '\x08':    # Backspace key
         word = word[:-1]
     elif key == '\r':   # Enter key
-        deleted = delete(root, word)
+        deleted = delete(root, word.lower())
         if deleted:
             print(f"\nDeleted word '{word}' from trie.\n")
             was_deleted = True

@@ -41,4 +41,4 @@ pip install msgpack
 
 - createNewTrieFromTxt.py replaces existing saved object
 - addNewWordsToTrie.py specifies new text file with word list to add to
-- runAutoCompleteInput.py shows a simple demonstration on autocomplete while typing
+- runAutoCompleteInput.py shows a simple demonstration on autocomplete while typing (new: Can delete individual words by clicking enter)
