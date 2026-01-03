@@ -1,5 +1,6 @@
 import msgpack
 from node import Node
+from helper import node_to_dict
 
 TEXT_DATA_LOCATION = 'data/words.txt'
 SAVE_LOCATION = 'saved_object/trie_object.msgpack'
@@ -14,15 +15,6 @@ def add_word(root: Node, word: str):
             curr.edges[index] = Node()
         curr = curr.edges[index]
     curr.is_end_of_word = True
-
-
-def node_to_dict(node):
-    """Recursively convert Node to dict for serialization."""
-    return {
-        "is_end_of_word": node.is_end_of_word,
-        "edges": {char: node_to_dict(child) for char, child in node.edges.items()}
-    }
-
 
 with open(TEXT_DATA_LOCATION, 'r', encoding="utf-8") as f:
     lines = f.readlines()

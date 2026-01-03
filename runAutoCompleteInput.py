@@ -3,20 +3,15 @@ import msvcrt
 import msgpack
 
 from node import Node
+from helper import dict_to_node, node_to_dict
 
+SAVED_OBJECT = 'saved_object/trie_object.msgpack'   # from createNewTrieFromTxt.py
+SAVE_LOCATION = 'saved_object/trie_object.msgpack'
 LIMIT_AUTO_COMPLETE = 10
 
-def dict_to_node(d):
-    """Convert dict back to Node recursively."""
-    node = Node()
-    node.is_end_of_word = d["is_end_of_word"]
-    node.edges = {char: dict_to_node(child)
-                  for char, child in d["edges"].items()}
-    return node
 
-
-with open("saved_object/trie_object.msgpack", "rb") as f:
-    print("Loading trie...")
+with open(SAVE_LOCATION, "rb") as f:
+    print("Loading trie...\n")
     # Strict map key false to allow int
     loaded_dict = msgpack.unpackb(f.read(), raw=False, strict_map_key=False)
 
@@ -52,18 +47,55 @@ def traverse(root: Node, user_input=""):
         curr = curr.edges[index]
     return run_traverse(curr, user_input, LIMIT_AUTO_COMPLETE)
 
+def delete(node: Node, to_del: str):
+    if not node:
+        return False
+    if len(to_del) == 0:
+        return False
 
-print("Press keys (Esc to exit):")
+    edge:Node = node.edges.get(ord(to_del[0]))
+    if len(to_del) == 1:
+        if edge and edge.is_end_of_word:
+            edge.is_end_of_word = False
+            return True
+        else:
+            return False
+    else:
+        found = delete(edge, to_del[1:])
+        if found:
+            # If the child node has no edges and is not end of another word, remove it
+            if edge and not edge.is_end_of_word and len(edge.edges) == 0:
+                del node.edges[ord(to_del[0])]
+            return True
+    
+
+print("Press keys (Esc to exit, Enter to delete):")
 print("Suggestions for ", end='', flush=True)
 word = ""
 prev_len = 100
+was_deleted = False
 while True:
     key = msvcrt.getwch()  # get a single Unicode character
     if key == '\x1b':      # Esc key
-        print("\nExiting...")
+        if was_deleted:
+            print("\nSaving changes to trie...")
+            with open(SAVED_OBJECT, 'wb') as f:
+                trie_dict = node_to_dict(root)
+                packed = msgpack.packb(trie_dict, use_bin_type=True)
+                f.write(packed)
+            print("Changes saved.")
+            print("\nExiting...")
         break
     elif key == '\x08':    # Backspace key
         word = word[:-1]
+    elif key == '\r':   # Enter key
+        deleted = delete(root, word)
+        if deleted:
+            print(f"\nDeleted word '{word}' from trie.\n")
+            was_deleted = True
+        else:
+            print(f"\nWord '{word}' not found in trie.\n")
+        word = ""
     else:
         word += key
 
@@ -78,7 +110,7 @@ while True:
     suggestions = traverse(root, word)
     sys.stdout.write('\r' + ' ' * prev_len + '\r')  # Clear line
 
-    OUT = f"Suggestions for '{word}': {suggestions}"
-    prev_len = len(OUT)
+    OUT = f"Suggestions for '{word}': \t{suggestions}"
+    prev_len = len(OUT) + 10
     sys.stdout.write(OUT)
     sys.stdout.flush()

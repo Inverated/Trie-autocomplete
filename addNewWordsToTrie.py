@@ -1,25 +1,9 @@
 import msgpack
 from node import Node
+from helper import dict_to_node, node_to_dict
 
 TEXT_LOCATION = 'data/fakewordstotest.txt'
-SAVED_OBJECT = 'saved_object/trie_object.msgpack'
-
-
-def dict_to_node(d):
-    """Convert dict back to Node recursively."""
-    node = Node()
-    node.is_end_of_word = d["is_end_of_word"]
-    node.edges = {char: dict_to_node(child)
-                  for char, child in d["edges"].items()}
-    return node
-
-
-def node_to_dict(node):
-    """Recursively convert Node to dict for serialization."""
-    return {
-        "is_end_of_word": node.is_end_of_word,
-        "edges": {char: node_to_dict(child) for char, child in node.edges.items()}
-    }
+SAVED_OBJECT = 'saved_object/trie_object.msgpack'   # from createNewTrieFromTxt.py
 
 
 with open(SAVED_OBJECT, "rb") as f:
@@ -29,8 +13,8 @@ with open(SAVED_OBJECT, "rb") as f:
 root = dict_to_node(loaded_dict)
 
 
-def add_word(root: Node, word: str):
-    curr = root
+def add_word(node: Node, word: str):
+    curr = node
     for char in word:
         index = ord(char.lower())
         if not curr.edges.get(index):
